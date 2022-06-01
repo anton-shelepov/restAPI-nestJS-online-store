@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+
+  nestDB:
+    image: postgres:14
+    ports:
+      - 5434:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ant0nsh3l3p0v4576
+      POSTGRES_DB: nest
+
+
+

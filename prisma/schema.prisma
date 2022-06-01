@@ -1,0 +1,174 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----- User -----
+model user {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  email String @unique
+  hash  String
+  role  role   @default(USER)
+
+  fullName String?
+  address  String?
+  phone    String?
+  gender   String?
+
+  profileImage profileImage?
+
+  basket basket?
+
+  favorite favorite?
+
+  review review[]
+
+  @@map("users")
+}
+
+// ----- Profile image ----- 
+
+model profileImage {
+  id       Int    @id @default(autoincrement())
+  fileName String
+
+  userId Int?  @unique
+  user   user? @relation(fields: [userId], references: [id])
+}
+
+// ----- Role ----- 
+
+enum role {
+  USER
+  ADMIN
+}
+
+// ----- Basket -----
+
+model basket {
+  userId Int  @id
+  user   user @relation(fields: [userId], references: [id])
+
+  products product[]
+}
+
+// ----- Favorite -----
+
+model favorite {
+  userId Int  @id
+  user   user @relation(fields: [userId], references: [id])
+
+  products product[]
+}
+
+// ----- Category -----
+
+model category {
+  id Int @id @default(autoincrement())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
+
+  categoryName        String @unique
+  categoryCatalogName String
+
+  image String?
+  icon  String?
+
+  products product[]
+
+  @@map("categories")
+}
+
+// ----- Product -----
+
+model product {
+  id Int @id @default(autoincrement())
+
+  title     String
+  mainSpecs String
+  isInStock Boolean
+  price     Int
+
+  rating   Int?
+  discount Int?
+
+  images productImage[]
+
+  specs specGroup[]
+
+  reviews review[]
+
+  basket basket[]
+
+  favorite favorite[]
+
+  categoryId Int?
+  category   category? @relation(fields: [categoryId], references: [id])
+
+  @@map("products")
+}
+
+// ----- Product image -----
+
+model productImage {
+  id       Int    @id @default(autoincrement())
+  fileName String
+
+  productId Int?
+  product   product? @relation(fields: [productId], references: [id])
+}
+
+// ----- Product specs -----
+
+model specGroup {
+  id Int @id @default(autoincrement())
+
+  specGroupTitle  String
+  specGroupValues specGroupValue[]
+
+  product   product? @relation(fields: [productId], references: [id])
+  productId Int?
+
+  @@map("specs")
+}
+
+model specGroupValue {
+  id Int @id @default(autoincrement())
+
+  value String[]
+
+  specGroupId Int?
+  specGroup   specGroup? @relation(fields: [specGroupId], references: [id])
+}
+
+// ----- Reviews ------
+
+model review {
+  id Int @id @default(autoincrement())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  usedTerm String
+  dignity  String
+  flaws    String
+  comment  String
+  rating   Int
+
+  authorId Int?
+  author   user? @relation(fields: [authorId], references: [id])
+
+  productId Int?
+  product   product? @relation(fields: [productId], references: [id])
+}
