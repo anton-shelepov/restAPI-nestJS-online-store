@@ -6,9 +6,6 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "db:dev:rm": "docker compose rm nestDB -f -s -v",
-    "db:dev:up": "docker compose up nestDB -d",
-    "db:dev:restart": "docker compose rm nestDB -f -s -v && docker compose up nestDB -d && timeout 4 && npx prisma migrate deploy",
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

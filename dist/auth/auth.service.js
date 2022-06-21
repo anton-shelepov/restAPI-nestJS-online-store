@@ -10,12 +10,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
+const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const jwt_1 = require("@nestjs/jwt");
-const prisma_service_1 = require("./../prisma/prisma.service");
-const common_1 = require("@nestjs/common");
-const argon = require("argon2");
 const runtime_1 = require("@prisma/client/runtime");
+const argon = require("argon2");
+const prisma_service_1 = require("./../prisma/prisma.service");
 let AuthService = class AuthService {
     constructor(prisma, jwt, config) {
         this.prisma = prisma;
@@ -23,15 +23,17 @@ let AuthService = class AuthService {
         this.config = config;
     }
     async signup(dto) {
-        const hash = await argon.hash(dto.password);
         try {
-            const user = await this.prisma.user.create({
+            const hash = await argon.hash(dto.password);
+            const newUser = await this.prisma.user.create({
                 data: {
                     email: dto.email,
                     hash,
                 }
             });
-            return this.signToken(user.id, user.email);
+            const tokens = await this.getTokens(newUser.id, newUser.role);
+            await this.updateRtHash(newUser.id, tokens.refresh_token);
+            return tokens;
         }
         catch (error) {
             if (error instanceof runtime_1.PrismaClientKnownRequestError) {
@@ -53,19 +55,35 @@ let AuthService = class AuthService {
         const passwordsMatches = await argon.verify(user.hash, dto.password);
         if (!passwordsMatches)
             throw new common_1.ForbiddenException('Credentials incorrect');
-        return this.signToken(user.id, user.email);
+        return this.getTokens(user.id, user.email);
     }
-    async signToken(userId, email) {
+    async updateRtHash(userId, rt) {
+        const hashedRt = await argon.hash(rt);
+        await this.prisma.user.update({
+            where: {
+                id: userId,
+            },
+            data: {
+                hashedRt
+            }
+        });
+    }
+    async getTokens(userId, role) {
         const payload = {
             sub: userId,
-            email
+            role
         };
-        const token = await this.jwt.signAsync(payload, {
-            expiresIn: '6000m',
-            secret: this.config.get("JWT_SECRET"),
+        const accessToken = await this.jwt.signAsync(payload, {
+            expiresIn: 15,
+            secret: this.config.get("AT_SECRET"),
+        });
+        const refreshToken = await this.jwt.signAsync(payload, {
+            expiresIn: "90d",
+            secret: this.config.get("RT_SECRET")
         });
         return {
-            access_token: token,
+            access_token: accessToken,
+            refresh_token: refreshToken,
         };
     }
 };

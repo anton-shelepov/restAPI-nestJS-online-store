@@ -1,12 +1,9 @@
-import { AuthDto } from './dto/auth.dto';
 import { AuthService } from './auth.service';
+import { SigninDto } from './dto/signin.dto';
+import { SignupDto } from './dto/signup.dto';
 export declare class AuthController {
     private authService;
     constructor(authService: AuthService);
-    signup(dto: AuthDto): Promise<{
-        access_token: string;
-    }>;
-    signin(dto: AuthDto): Promise<{
-        access_token: string;
-    }>;
+    signup(dto: SignupDto): Promise<import("./types/tokens").default>;
+    signin(dto: SigninDto): Promise<import("./types/tokens").default>;
 }

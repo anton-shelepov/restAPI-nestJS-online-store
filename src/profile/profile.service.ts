@@ -1,9 +1,8 @@
-import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ForbiddenException, Injectable } from "@nestjs/common";
+import * as argon from 'argon2';
+import * as fs from 'fs';
 import { PrismaService } from "src/prisma/prisma.service";
-import * as argon from 'argon2'
-import { user } from '@prisma/client';
-import * as fs from 'fs'
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class ProfileService {
@@ -35,7 +34,7 @@ export class ProfileService {
 
     async updateProfile(userId: number, updatedData: UpdateProfileDto) {
         try {
-            const user: user = await this.prisma.user.findUnique({
+            const user = await this.prisma.user.findUnique({
                 where: {
                     id: userId,
                 }
@@ -81,7 +80,7 @@ export class ProfileService {
     }
 
     async addProfileImage(fileName: string, userId: number) {
-        try { 
+        try {
             const currentProfileImage = await this.prisma.user.findUnique({
                 where: {
                     id: userId
@@ -89,7 +88,7 @@ export class ProfileService {
                 select: {
                     profileImage: true
                 }
-            }).then(image => image.profileImage) 
+            }).then(image => image.profileImage)
 
             // If user already have profileImage
             if (currentProfileImage) {
@@ -98,7 +97,7 @@ export class ProfileService {
                     where: {
                         userId,
                     }
-                }) 
+                })
 
                 // Delete image from public uploads
                 await fs.unlink(`./uploads/images/${currentProfileImage.fileName}`, (err) => {
@@ -119,12 +118,12 @@ export class ProfileService {
                         }
                     }
                 }
-            }) 
+            })
 
             return newProfileImage
 
         } catch (error) {
             throw error
-        } 
+        }
     }
 }

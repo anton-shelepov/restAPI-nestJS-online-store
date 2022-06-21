@@ -3,14 +3,14 @@ export declare class UsersService {
     private prisma;
     constructor(prisma: PrismaService);
     getAllUsers(): Promise<{
-        createdAt: Date;
         id: number;
-        review: import(".prisma/client").review[];
+        createdAt: Date;
+        email: string;
+        role: import(".prisma/client").Role;
+        profileImage: import(".prisma/client").ProfileImage;
+        review: import(".prisma/client").Review[];
         _count: {
             review: number;
         };
-        profileImage: import(".prisma/client").profileImage;
-        email: string;
-        role: import(".prisma/client").role;
     }[]>;
 }
